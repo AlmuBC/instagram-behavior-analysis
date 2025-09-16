@@ -138,6 +138,7 @@ celerybeat.pid
 .env
 .envrc
 .venv
+.venv_instagram_project
 env/
 venv/
 ENV/
@@ -167,6 +168,12 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Local data 
+data/
+
+# VSCode local history
+.history/
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
