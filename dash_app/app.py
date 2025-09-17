@@ -4,6 +4,7 @@ import pandas as pd
 import json
 
 from layout import serve_layout  # import layout function
+from utils import load_messages_df
 
 
 # Helper function to parse Instagram JSON structure (follows/unfollows)
@@ -72,9 +73,44 @@ fig_likes = px.bar(
     title="Likes given per month (Posts vs Comments)"
 )
 
+# --- MESSAGES ---
+df_messages = load_messages_df()
+
+# Mensajes por mes
+monthly = df_messages.groupby(["month", "is_sent_by_me"]).size().reset_index(name="n_messages")
+monthly["type"] = monthly["is_sent_by_me"].map({True: "Sent", False: "Received"})
+fig_messages_month = px.line(
+    monthly, x="month", y="n_messages", color="type", markers=True,
+    title="Messages Sent vs Received per Month"
+)
+
+# Mensajes por hora
+df_sent = df_messages[df_messages["is_sent_by_me"]].copy()
+df_sent["hour_block"] = (df_sent["hour"] // 4) * 4
+df_sent["hour_block"] = df_sent["hour_block"].astype(str) + "-" + (df_sent["hour_block"] + 3).astype(str)
+# Agrupar por mes y bloque horario
+df_grouped = df_sent.groupby(["month", "hour_block"]).size().reset_index(name="n_messages")
+
+# Pivot para stacked bar
+df_pivot = df_grouped.pivot(index="month", columns="hour_block", values="n_messages").fillna(0).astype(int)
+
+# Crear figura
+hour_block_order = ["0-3", "4-7", "8-11", "12-15", "16-19", "20-23"]
+
+fig_hour_block = px.bar(
+    df_grouped,
+    x="month",
+    y="n_messages",
+    color="hour_block",
+    title="Messages Sent by Hour Block per Month",
+    labels={"n_messages": "Messages", "hour_block": "Hour Block", "month": "Month"},
+    barmode="stack",
+    category_orders={"hour_block": hour_block_order}
+)
+
 # --- DASH APP ---
 app = dash.Dash(__name__)
-app.layout = serve_layout(fig_follows, fig_likes)
+app.layout = serve_layout(fig_follows, fig_likes, fig_messages_month, fig_hour_block)
 
 
 if __name__ == "__main__":
