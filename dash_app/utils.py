@@ -58,3 +58,24 @@ def load_ads_view_authors(path="data/raw/ads_and_topics/ads_viewed.json"):
     df["normalized_author"] = df["author"].str.lower().str.replace(r"[^a-z0-9]", "", regex=True)
     count_df = df.groupby(["normalized_author", "author"]).size().reset_index(name="count")
     return count_df
+
+def load_story_likes(path="data/raw/story_interactions/story_likes.json"):
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)["story_activities_story_likes"]
+
+    rows = []
+    for entry in data:
+        ts = pd.to_datetime(entry["string_list_data"][0]["timestamp"], unit="s")
+        rows.append({"timestamp": ts})
+
+    df = pd.DataFrame(rows)
+
+    if df.empty:
+        return df
+
+    # Añadimos columnas necesarias
+    df["month"] = df["timestamp"].dt.to_period("M").astype(str)
+    df["day"] = df["timestamp"].dt.day_name()
+    df["hour"] = df["timestamp"].dt.hour
+
+    return df
