@@ -4,7 +4,7 @@ import pandas as pd
 import json
 
 from layout import serve_layout  # import layout function
-from utils import load_messages_df
+from utils import load_messages_df, load_advertisers, load_ads_view_authors
 
 
 # Helper function to parse Instagram JSON structure (follows/unfollows)
@@ -108,9 +108,62 @@ fig_hour_block = px.bar(
     category_orders={"hour_block": hour_block_order}
 )
 
+# --- HEATMAP: Messages sent by Day of Week and Hour ---
+
+df_messages["weekday"] = df_messages["timestamp"].dt.day_name()
+df_messages["hour"] = df_messages["timestamp"].dt.hour
+
+heatmap_data = df_messages[df_messages["is_sent_by_me"]].groupby(["weekday", "hour"]).size().reset_index(name="count")
+
+# Ordenar días manualmente
+ordered_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+heatmap_data["weekday"] = pd.Categorical(heatmap_data["weekday"], categories=ordered_days, ordered=True)
+
+# Crear matriz para el heatmap
+heatmap_matrix = heatmap_data.pivot(index="weekday", columns="hour", values="count").fillna(0)
+
+fig_messages_heatmap = px.imshow(
+    heatmap_matrix,
+    labels=dict(x="Hour of Day", y="Day of Week", color="Messages"),
+    title="Messages Sent by Day and Hour",
+    aspect="auto"
+)
+
+# --- ADVERTISERS AND VIEWED AUTHORS ---
+df_adv = load_advertisers("data/raw/instagram_ads_and_businesses/advertisers_using_your_activity_or_information.json")
+df_authors = load_ads_view_authors("data/raw/ads_and_topics/ads_viewed.json")
+
+# Normalizar nombres de anunciantes
+df_adv["normalized_name"] = df_adv["advertiser_name"].str.lower().str.replace(r"[^a-z0-9]", "", regex=True)
+
+# Cruce entre anunciantes y autores vistos
+df_intersect = df_adv.merge(
+    df_authors,
+    left_on="normalized_name",
+    right_on="normalized_author",
+    how="inner",
+    suffixes=("_adv", "_auth")
+)
+
+# Calculamos métricas básicas
+total_adv = len(df_adv)
+unique_authors = df_authors["normalized_author"].nunique()
+advertisers_shown = len(df_intersect)
+# Para el gráfico: solo necesitamos nombre y count
+df_intersect_graph = df_intersect[["advertiser_name", "count"]].sort_values("count", ascending=False)
+
+# Figura de barras: anunciantes que te impactaron y nº de anuncios vistos
+fig_advertisers_intersect = px.bar(
+    df_intersect_graph,
+    x="advertiser_name",
+    y="count",
+    title="Advertisers Using Your Data That Actually Showed You Ads",
+    labels={"advertiser_name": "Advertiser", "count": "Ads viewed"}
+)
+
 # --- DASH APP ---
 app = dash.Dash(__name__)
-app.layout = serve_layout(fig_follows, fig_likes, fig_messages_month, fig_hour_block)
+app.layout = serve_layout(fig_follows, fig_likes, fig_messages_month, fig_hour_block,fig_messages_heatmap,fig_advertisers_intersect)
 
 
 if __name__ == "__main__":

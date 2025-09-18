@@ -1,6 +1,6 @@
 from dash import dcc, html
 
-def serve_layout(fig_follows, fig_likes, fig_messages_month, fig_hour_block):
+def serve_layout(fig_follows, fig_likes, fig_messages_month, fig_hour_block,fig_messages_heatmap,fig_advertisers_intersect):
     return html.Div([
         html.H1("Instagram Activity Dashboard"),
         
@@ -22,7 +22,14 @@ def serve_layout(fig_follows, fig_likes, fig_messages_month, fig_hour_block):
             html.H2("Messages by hour block per month"),
             dcc.Graph(figure=fig_hour_block),
         ]),
-
+        html.Div([
+            html.H2("Messages heatmap (Day vs Hour)"),
+            dcc.Graph(figure=fig_messages_heatmap),
+        ]),
+        html.Div([
+            html.H2("Cross-analysis: advertisers who showed you ads"),
+            dcc.Graph(figure=fig_advertisers_intersect),
+        ]),
 
 
     ])

@@ -39,3 +39,22 @@ def load_messages_df(inbox_path="data/raw/Inbox/", my_name="Almu"):
     df["hour"] = df["timestamp"].dt.hour
 
     return df
+def load_advertisers(path="data/raw/instagram_ads_and_businesses/advertisers_using_your_activity_or_information.json"):
+    """Load the advertisers that use your activity for custom audiences."""
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)["ig_custom_audiences_all_types"]
+    return pd.DataFrame(data)
+
+def load_ads_view_authors(path="data/raw/ads_and_topics/ads_viewed.json"):
+    """Load ad authors from ads_viewed.json and count views per author."""
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)["impressions_history_ads_seen"]
+    records = []
+    for entry in data:
+        author = entry["string_map_data"]["Author"]["value"]
+        records.append(author)
+    # Count how many times each author appears
+    df = pd.DataFrame(records, columns=["author"])
+    df["normalized_author"] = df["author"].str.lower().str.replace(r"[^a-z0-9]", "", regex=True)
+    count_df = df.groupby(["normalized_author", "author"]).size().reset_index(name="count")
+    return count_df
