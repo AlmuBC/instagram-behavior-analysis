@@ -5,6 +5,7 @@ import json
 
 from layout import serve_layout  # import layout function
 from utils import load_messages_df, load_advertisers, load_ads_view_authors, load_story_likes
+from callbacks import register_callbacks
 
 from plotly_theme import register_plotly_template
 register_plotly_template()
@@ -192,8 +193,9 @@ fig_story_like_heatmap = px.imshow(
 
 # --- DASH APP ---
 app = dash.Dash(__name__)
+register_callbacks(app)  
 app.layout = serve_layout(fig_follows, fig_likes, fig_messages_month, fig_hour_block,fig_messages_heatmap,
-                          fig_advertisers_intersect, fig_story_like_trend, fig_story_like_heatmap)
+                          fig_advertisers_intersect, None, None)
 
 
 if __name__ == "__main__":

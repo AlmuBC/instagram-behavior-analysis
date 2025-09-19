@@ -79,3 +79,9 @@ def load_story_likes(path="data/raw/story_interactions/story_likes.json"):
     df["hour"] = df["timestamp"].dt.hour
 
     return df
+
+def filter_by_date(df, date_col, start_date, end_date):
+    return df[
+        (df[date_col] >= pd.to_datetime(start_date)) &
+        (df[date_col] <= pd.to_datetime(end_date))
+    ]
