@@ -1,0 +1,63 @@
+
+/* === Dashboard theme (drop into assets/theme.css) === */
+:root {
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --text: #1F2937;
+  --muted-text: #4B5563;
+  --primary: #E63878;
+  --secondary: #D4E5F3;
+  --accent-1: #F6C4D9;
+  --accent-2: #EAE6AC;
+  --border: #EAE6AC;
+  --grid: #E8E3DA;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, Segoe UI, system-ui, -apple-system, sans-serif;
+}
+
+a { color: var(--primary); }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.04);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+.btn-primary:hover { filter: brightness(0.95); }
+
+.badge { 
+  display: inline-block; 
+  padding: 4px 10px; 
+  border-radius: 999px; 
+  background: var(--secondary); 
+  color: var(--text); 
+}
+
+/* Plotly canvas tweaks when embedded in Dash */
+/*.js-plotly-plot .main-svg {
+  background: var(--surface) !important;
+}
+.plot-container .svg-container { background: var(--surface) !important; }
+*/
+.table { 
+  background: var(--surface); 
+  border: 1px solid var(--border); 
+  border-radius: 12px; 
+  overflow: hidden; 
+}
+.table th { background: var(--accent-2); color: var(--text); }
+.table td, .table th { padding: 10px; border-bottom: 1px solid var(--border); }

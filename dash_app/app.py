@@ -6,6 +6,9 @@ import json
 from layout import serve_layout  # import layout function
 from utils import load_messages_df, load_advertisers, load_ads_view_authors, load_story_likes
 
+from plotly_theme import register_plotly_template
+register_plotly_template()
+
 
 # Helper function to parse Instagram JSON structure (follows/unfollows)
 def load_instagram_json(path, key):
