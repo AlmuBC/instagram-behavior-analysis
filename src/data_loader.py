@@ -36,7 +36,7 @@ def load_event_timestamps(raw_data_path="data/raw"):
                 event_rows.append((event_type, ts))
                 n_found += 1
 
-        print(f"{event_type}: {n_found} timestamps extracted")
+        # print(f"{event_type}: {n_found} timestamps extracted")
 
     df = pd.DataFrame(event_rows, columns=["event_type", "timestamp"])
     df = df[df["timestamp"].apply(lambda x: isinstance(x, (pd.Timestamp, datetime)) and pd.notnull(x))]
@@ -110,7 +110,7 @@ def load_sent_messages(user_name="Almu", base_path="data/raw/inbox"):
             with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
         except Exception as e:
-            print(f"Could not load {path}: {e}")
+            # print(f"Could not load {path}: {e}")
             continue
 
         messages = data.get("messages", [])

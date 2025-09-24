@@ -174,7 +174,10 @@ data/
 
 # VSCode local history
 .history/
+
+# model logs
 notebooks/lightning_logs/
+lightning_logs/
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can

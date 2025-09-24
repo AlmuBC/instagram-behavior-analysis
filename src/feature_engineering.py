@@ -46,3 +46,28 @@ def prepare_time_series_for_nhits(df, signals, freq='H'):
         all_series.append(temp)
 
     return pd.concat(all_series).reset_index(drop=True)
+
+def create_total_event_time_series(df, freq='h'):
+    """
+    Create a single time series with total event count over time.
+
+    Parameters:
+        df (pd.DataFrame): DataFrame with 'timestamp'
+        freq (str): Resampling frequency ('H' for hourly, 'D' for daily)
+
+    Returns:
+        pd.DataFrame: DataFrame with columns ['ds', 'y'] representing the time series
+    """
+    df = df.copy()
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df['count'] = 1
+
+    ts_df = (
+        df.set_index('timestamp')
+          .resample(freq)['count']
+          .sum()
+          .reset_index()
+          .rename(columns={'timestamp': 'ds', 'count': 'y'})
+    )
+
+    return ts_df
