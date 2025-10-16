@@ -71,3 +71,19 @@ def create_total_event_time_series(df, freq='h'):
     )
 
     return ts_df
+
+
+def build_series_from_forecast(forecast_df: pd.DataFrame, forecast_col: str | None = None) -> pd.DataFrame:
+    """
+    Adapt a forecast dataframe to the standard shape ['ds','y'] so it can be
+    fed directly into detect_anomalies(...). If forecast_col is None, it is inferred.
+    """
+    if forecast_col is None:
+        cols = [c for c in forecast_df.columns if c not in ("ds", "unique_id")]
+        if not cols:
+            raise ValueError("No forecast column found in forecast_df.")
+        forecast_col = cols[0]
+
+    out = forecast_df[["ds", forecast_col]].rename(columns={forecast_col: "y"}).copy()
+    out["ds"] = pd.to_datetime(out["ds"])
+    return out

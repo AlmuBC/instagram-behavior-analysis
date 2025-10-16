@@ -3,7 +3,7 @@ from neuralforecast import NeuralForecast
 import pandas as pd
 import numpy as np
 
-def train_and_forecast_nhits(ts_df, input_size=30, max_steps=5):
+def train_and_forecast_nhits(ts_df, input_size=30, max_steps=900):
     """
     Train NHITS on total daily event counts before 2025,
     and forecast the total daily activity in 2025.
