@@ -4,9 +4,6 @@ Minimal MVP to explore Instagram export data with a Dash/Plotly dashboard and ba
 
 ## Quickstart
 
-python -m venv .venv
-# Windows: .venv\Scripts\activate
-# macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 
 # Run dashboard
@@ -35,12 +32,9 @@ python -m dash_app.app
 
 ## Configuration
 
-- Timezone:
-  - Europe/Madrid
 - Data directory:
-  - Defaults to `data/processed/`
+  - Defaults to `data/raw/`
   - Can be changed in `src/data_loader.py`
-  - Or overridden via the `DATA_DIR` environment variable
 - Plot theme:
   - Light theme defined in `dash_app/plotly_theme.py`
 
