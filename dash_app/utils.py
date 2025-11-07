@@ -2,6 +2,10 @@ import os
 import json
 import pandas as pd
 
+from pathlib import Path
+from wordcloud import WordCloud
+import plotly.express as px
+
 def load_messages_df(inbox_path="data/raw/Inbox/", my_name="Almu"):
     rows = []
 
@@ -85,3 +89,50 @@ def filter_by_date(df, date_col, start_date, end_date):
         (df[date_col] >= pd.to_datetime(start_date)) &
         (df[date_col] <= pd.to_datetime(end_date))
     ]
+
+# build wordcloud figure
+
+def load_recommended_topics(project_root=".."):
+    """Read recommended_topics.json (your_topics/ o your_topic/)."""
+
+    json_path =  Path("data/raw/your_topics/recommended_topics.json")
+
+    if json_path is None:
+        return [], {}
+
+    import json
+    with json_path.open(encoding="utf-8") as f:
+        data = json.load(f)
+
+    words = sorted({
+        item.get("string_map_data", {}).get("Name", {}).get("value")
+        for item in data.get("topics_your_topics", [])
+        if item.get("string_map_data", {}).get("Name", {}).get("value")
+    })
+    freqs = {w: 1 for w in words}
+    return words, freqs
+
+def build_wordcloud_figure(freqs: dict):
+    """Generates a word-cloud image and displays it with Plotly (so it can be easily embedded in Dash)."""
+    if not freqs:
+        fig = px.imshow([[0]])
+        fig.update_xaxes(visible=False); fig.update_yaxes(visible=False)
+        fig.add_annotation(text="No topics found", xref="paper", yref="paper",
+                           showarrow=False, font=dict(size=18))
+        fig.update_traces(coloraxis=None, showscale=False)
+        return fig
+
+    wc = WordCloud(
+        width=1600, height=900,
+        background_color="white",
+        colormap="tab20",
+        prefer_horizontal=1.0,
+        collocations=False,
+        normalize_plurals=False
+    ).generate_from_frequencies(freqs)
+
+    img = wc.to_array()  # numpy array (H,W,3)
+    fig = px.imshow(img)
+    fig.update_xaxes(visible=False); fig.update_yaxes(visible=False)
+    fig.update_layout( coloraxis_showscale=False)
+    return fig

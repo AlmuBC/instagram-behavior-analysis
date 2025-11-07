@@ -4,7 +4,7 @@ import pandas as pd
 import json
 
 from layout import serve_layout  # import layout function
-from utils import load_messages_df, load_advertisers, load_ads_view_authors, load_story_likes
+from utils import load_messages_df, load_advertisers, load_ads_view_authors, load_story_likes, load_recommended_topics, build_wordcloud_figure
 from callbacks import register_callbacks
 
 from plotly_theme import register_plotly_template
@@ -165,37 +165,24 @@ fig_advertisers_intersect = px.bar(
     labels={"advertiser_name": "Advertiser", "count": "Ads viewed"}
 )
 
-# --- STORY LIKES ---
-df_story_likes = load_story_likes()
 
-# Serie temporal por mes
-df_story_likes["month"] = df_story_likes["timestamp"].dt.to_period("M").astype(str)
-likes_month = df_story_likes.groupby("month").size().reset_index(name="n_likes")
-fig_story_like_trend = px.line(likes_month, x="month", y="n_likes", title="Story Likes per Month")
+# topics wordcloud
+words, topic_freqs = load_recommended_topics(project_root="..")
+fig_wordcloud = build_wordcloud_figure(topic_freqs)
 
-# Heatmap día-hora
-heatmap_data = df_story_likes.groupby(["day", "hour"]).size().reset_index(name="n_likes")
-heatmap_pivot = heatmap_data.pivot(index="day", columns="hour", values="n_likes").fillna(0)
-
-# Asegurar orden días
-day_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-heatmap_pivot = heatmap_pivot.reindex(day_order)
-
-fig_story_like_heatmap = px.imshow(
-    heatmap_pivot,
-    labels=dict(x="Hour", y="Day", color="Likes"),
-    x=heatmap_pivot.columns,
-    y=heatmap_pivot.index,
-    title="Heatmap of Story Likes by Day and Hour"
+fig_right_placeholder = px.imshow([[0]])
+fig_right_placeholder.update_xaxes(visible=False); fig_right_placeholder.update_yaxes(visible=False)
+fig_right_placeholder.add_annotation(
+    text="Aquí irá tu segunda visualización",
+    xref="paper", yref="paper", showarrow=False, font=dict(size=18)
 )
-
-
+fig_right_placeholder.update_traces(coloraxis=None, showscale=False)
 
 # --- DASH APP ---
 app = dash.Dash(__name__)
 register_callbacks(app)  
 app.layout = serve_layout(fig_follows, fig_likes, fig_messages_month, fig_hour_block,fig_messages_heatmap,
-                          fig_advertisers_intersect, None, None)
+                          fig_advertisers_intersect, fig_wordcloud)
 
 
 if __name__ == "__main__":

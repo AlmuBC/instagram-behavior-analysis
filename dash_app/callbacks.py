@@ -2,6 +2,11 @@ from dash.dependencies import Input, Output
 from utils import load_story_likes, filter_by_date
 import plotly.express as px
 import pandas as pd
+from plotly_theme import SEQ_FUCHSIA
+import random
+from dash import Input, Output, State, html
+
+
 
 def register_callbacks(app):
     
@@ -81,11 +86,59 @@ def register_callbacks(app):
         heatmap_data["day"] = pd.Categorical(heatmap_data["day"], categories=day_order, ordered=True)
         heatmap_pivot = heatmap_data.pivot(index="day", columns="hour", values="n_likes").fillna(0)
 
+        # Agrupar por día y hora
+        heatmap_data = filtered_df.groupby(["day", "hour"]).size().reset_index(name="n_likes")
+
+        # Ordenar días manualmente
+        day_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        heatmap_data["day"] = pd.Categorical(heatmap_data["day"], categories=day_order, ordered=True)
+
+        # Pivot → matriz día x hora
+        heatmap_pivot = heatmap_data.pivot(index="day", columns="hour", values="n_likes").fillna(0)
+
+        # Visualización 
         fig = px.imshow(
-            heatmap_pivot,
+            heatmap_pivot.values,
             labels=dict(x="Hour", y="Day", color="Likes"),
-            x=heatmap_pivot.columns,
-            y=heatmap_pivot.index,
-            title="Heatmap of Story Likes by Day and Hour"
+            x=heatmap_pivot.columns.tolist(),
+            y=heatmap_pivot.index.tolist(),
+            title="Heatmap of Story Likes by Day and Hour",
+            aspect="auto",
+            color_continuous_scale= SEQ_FUCHSIA
         )
+        fig.update_layout(margin=dict(t=50, b=50, l=50, r=50))
         return fig
+    
+    
+    @app.callback(
+        Output("random-topic-output", "children"),
+        Input("btn-random", "n_clicks"),
+        State("n-random-dropdown", "value"),
+        prevent_initial_call=True
+    )
+    def pick_random_topics(n_clicks, n):
+        from utils import load_recommended_topics
+        import random
+
+        words, _ = load_recommended_topics()
+
+        if not words:
+            return html.Div("No topics available.")
+
+        n = min(n, len(words))
+        selected = random.sample(words, n)
+
+        return [
+            html.Div(
+                w,
+                style={
+                    "backgroundColor": "#F6C4D9",     # rosa claro
+                    "padding": "6px 12px",
+                    "borderRadius": "16px",
+                    "fontWeight": "bold",
+                    "color": "#1F2937",
+                    "boxShadow": "1px 1px 3px rgba(0,0,0,0.1)"
+                }
+            )
+            for w in selected
+        ]
